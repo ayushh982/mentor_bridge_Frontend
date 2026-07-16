@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { loginUser } from "../../services/auth.service";
@@ -15,41 +15,51 @@ const Login = () => {
 
     const navigate = useNavigate();
 
-    const { setUser } = useAuth();
+    const { fetchUser } = useAuth();
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const onSubmit = async (formData) => {
 
-    try {
+        setIsLoading(true);
 
-        const res = await loginUser(formData);
+        try {
 
-        setUser(res.data);
+            const res = await loginUser(formData);
 
-        toast.success(res.message);
+            await fetchUser();
 
-        if (res.data.role === "student") {
+            toast.success(res.message);
 
-            navigate("/student/dashboard");
+            const role = res.data.role;
 
-        } else if (res.data.role === "mentor") {
+            if (role === "student") {
 
-            navigate("/mentor/dashboard");
+                navigate("/student/dashboard");
 
-        } else {
+            } else if (role === "mentor") {
 
-            navigate("/admin/dashboard");
+                navigate("/mentor/dashboard");
+
+            } else {
+
+                navigate("/admin/dashboard");
+
+            }
+
+        } catch (error) {
+
+            toast.error(
+                error.response?.data?.message || "Login failed"
+            );
+
+        } finally {
+
+            setIsLoading(false);
 
         }
 
-    } catch (error) {
-
-        toast.error(
-            error.response?.data?.message || "Login failed"
-        );
-
-    }
-
-};
+    };
 
     return (
 
@@ -69,7 +79,7 @@ const Login = () => {
                             Continue Your Learning Journey
                         </h1>
 
-                        <p className="mt-6 text-indigo-100 leading-8">
+                        <p className="mt-6 leading-8 text-indigo-100">
                             Connect with experienced mentors, join live sessions,
                             improve your skills and accelerate your career.
                         </p>
@@ -142,9 +152,10 @@ const Login = () => {
 
                             <button
                                 type="submit"
-                                className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white transition hover:bg-indigo-700"
+                                disabled={isLoading}
+                                className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                Login
+                                {isLoading ? "Logging in..." : "Login"}
                             </button>
 
                         </form>

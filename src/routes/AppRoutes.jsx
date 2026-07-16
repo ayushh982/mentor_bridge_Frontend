@@ -62,134 +62,130 @@ const AppRoutes = () => {
 
             {/* Student */}
 
-            <Route
-                element={
-                    <ProtectedRoute roles={["student"]}>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                }
-            >
+            <Route element={<ProtectedRoute roles={["student"]} />}>
 
-                <Route
-                    path="/student/dashboard"
-                    element={<StudentDashboard />}
-                />
+    <Route element={<DashboardLayout />}>
 
-                <Route
-                    path="/student/book-session"
-                    element={<BookSession />}
-                />
+        <Route
+            path="/student/dashboard"
+            element={<StudentDashboard />}
+        />
 
-                <Route
-                    path="/student/my-bookings"
-                    element={<MyBookings />}
-                />
+        <Route
+            path="/student/book-session"
+            element={<BookSession />}
+        />
 
-                <Route
-                    path="/student/payments"
-                    element={<PaymentHistory />}
-                />
+        <Route
+            path="/student/my-bookings"
+            element={<MyBookings />}
+        />
 
-                <Route
-                    path="/student/chat"
-                    element={<StudentChat />}
-                />
+        <Route
+            path="/student/payments"
+            element={<PaymentHistory />}
+        />
 
-                <Route
-                    path="/student/profile"
-                    element={<StudentProfile />}
-                />
+        <Route
+            path="/student/chat"
+            element={<StudentChat />}
+        />
 
-                <Route
-                    path="/student/settings"
-                    element={<Settings />}
-                />
+        <Route
+            path="/student/profile"
+            element={<StudentProfile />}
+        />
 
-            </Route>
+        <Route
+            path="/student/settings"
+            element={<Settings />}
+        />
+
+    </Route>
+
+</Route>
+
+            
 
             {/* Mentor */}
 
-            <Route
-                element={
-                    <ProtectedRoute roles={["mentor"]}>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                }
-            >
+        <Route element={<ProtectedRoute roles={["mentor"]} />}>
 
-                <Route
-                    path="/mentor/dashboard"
-                    element={<MentorDashboard />}
-                />
+    <Route element={<DashboardLayout />}>
 
-                <Route
-                    path="/mentor/complete-profile"
-                    element={<CompleteProfile />}
-                />
+        <Route
+            path="/mentor/dashboard"
+            element={<MentorDashboard />}
+        />
 
-                <Route
-                    path="/mentor/sessions"
-                    element={<Sessions />}
-                />
+        <Route
+            path="/mentor/complete-profile"
+            element={<CompleteProfile />}
+        />
 
-                <Route
-                    path="/mentor/earnings"
-                    element={<MentorEarnings />}
-                />
+        <Route
+            path="/mentor/sessions"
+            element={<Sessions />}
+        />
 
-                <Route
-                    path="/mentor/reviews"
-                    element={<MentorReviews />}
-                />
+        <Route
+            path="/mentor/earnings"
+            element={<MentorEarnings />}
+        />
 
-                <Route
-                    path="/mentor/chat"
-                    element={<MentorChat />}
-                />
+        <Route
+            path="/mentor/reviews"
+            element={<MentorReviews />}
+        />
 
-                <Route
-                    path="/mentor/profile"
-                    element={<MentorProfile />}
-                />
+        <Route
+            path="/mentor/chat"
+            element={<MentorChat />}
+        />
 
-            </Route>
+        <Route
+            path="/mentor/profile"
+            element={<MentorProfile />}
+        />
+
+    </Route>
+
+</Route>
 
             {/* Admin */}
 
-            <Route
-                element={
-                    <ProtectedRoute roles={["admin"]}>
-                        <DashboardLayout />
-                    </ProtectedRoute>
-                }
-            >
+            <Route element={<ProtectedRoute roles={["admin"]} />}>
 
-                <Route
-                    path="/admin/dashboard"
-                    element={<AdminDashboard />}
-                />
+    <Route element={<DashboardLayout />}>
 
-                <Route
-                    path="/admin/pending-mentors"
-                    element={<PendingMentors />}
-                />
+        <Route
+            path="/admin/dashboard"
+            element={<AdminDashboard />}
+        />
 
-                <Route
-                    path="/admin/users"
-                    element={<AdminUsers />}
-                />
+        <Route
+            path="/admin/pending-mentors"
+            element={<PendingMentors />}
+        />
 
-                <Route
-                    path="/admin/bookings"
-                    element={<AdminBookings />}
-                />
+        <Route
+            path="/admin/users"
+            element={<AdminUsers />}
+        />
 
-                <Route
-                   path="/admin/payments"
-                    element={<AdminPayments />}
-                />
+        <Route
+            path="/admin/bookings"
+            element={<AdminBookings />}
+        />
 
-            </Route>
+        <Route
+            path="/admin/payments"
+            element={<AdminPayments />}
+        />
+
+    </Route>
+
+</Route>
 
         </Routes>
     );
