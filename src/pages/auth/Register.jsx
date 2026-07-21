@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 
 import { registerUser } from "../../services/auth.service";
 
@@ -15,27 +15,35 @@ const Register = () => {
 
     const navigate = useNavigate();
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const role = watch("role", "student");
 
     const onSubmit = async (formData) => {
 
-    try {
+        setIsLoading(true);
 
-        const res = await registerUser(formData);
+        try {
 
-        toast.success(res.message);
+            const res = await registerUser(formData);
 
-        navigate("/login");
+            toast.success(res.message);
 
-    } catch (error) {
+            navigate("/login");
 
-        toast.error(
-            error.response?.data?.message || "Registration failed"
-        );
+        } catch (error) {
 
-    }
+            toast.error(
+                error.response?.data?.message || "Registration failed"
+            );
 
-};
+        } finally {
+
+            setIsLoading(false);
+
+        }
+
+    };
 
     return (
 
@@ -152,9 +160,10 @@ const Register = () => {
 
                             <button
                                 type="submit"
-                                className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white transition hover:bg-indigo-700"
+                                disabled={isLoading}
+                                className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                Create Account
+                                {isLoading ? "Creating Account..." : "Create Account"}
                             </button>
 
                         </form>

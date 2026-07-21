@@ -15,51 +15,60 @@ const Login = () => {
 
     const navigate = useNavigate();
 
-    const { fetchUser } = useAuth();
+    const { setUser } = useAuth();
 
     const [isLoading, setIsLoading] = useState(false);
 
     const onSubmit = async (formData) => {
 
-        setIsLoading(true);
+    setIsLoading(true);
 
-        try {
+    try {
 
-            const res = await loginUser(formData);
+        const res = await loginUser(formData);
 
-            await fetchUser();
+        console.log("LOGIN RESPONSE:", res);
 
-            toast.success(res.message);
+        // Save logged-in user in AuthContext
+        setUser(res.data.user);
 
-            const role = res.data.role;
+        toast.success(res.message);
 
-            if (role === "student") {
+        const role = res.data.user.role;
 
-                navigate("/student/dashboard");
+        if (role === "student") {
 
-            } else if (role === "mentor") {
+            navigate("/student/dashboard", { replace: true });
 
-                navigate("/mentor/dashboard");
+        } else if (role === "mentor") {
 
-            } else {
+            navigate("/mentor/dashboard", { replace: true });
 
-                navigate("/admin/dashboard");
+        } else if (role === "admin") {
 
-            }
+            navigate("/admin/dashboard", { replace: true });
 
-        } catch (error) {
+        } else {
 
-            toast.error(
-                error.response?.data?.message || "Login failed"
-            );
-
-        } finally {
-
-            setIsLoading(false);
+            toast.error("Invalid user role");
 
         }
 
-    };
+    } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+            error.response?.data?.message || "Login failed"
+        );
+
+    } finally {
+
+        setIsLoading(false);
+
+    }
+
+};
 
     return (
 
