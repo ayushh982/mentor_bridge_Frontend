@@ -4,28 +4,73 @@ import {
     Wallet,
 } from "lucide-react";
 
-const transactions = [
-    {
-        id: "TXN001",
-        student: "Ayush Tiwari",
-        amount: 499,
-        date: "12 July 2026",
-    },
-    {
-        id: "TXN002",
-        student: "Rahul Gupta",
-        amount: 799,
-        date: "14 July 2026",
-    },
-    {
-        id: "TXN003",
-        student: "Priya Sharma",
-        amount: 399,
-        date: "18 July 2026",
-    },
-];
+import { useEffect, useState } from "react";
+
+import { getMentorBookings } from "../../services/booking.service";
 
 const MentorEarnings = () => {
+
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        const fetchBookings = async () => {
+
+            try {
+
+                const res = await getMentorBookings();
+
+                setBookings(res.data);
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+        fetchBookings();
+
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                Loading...
+            </div>
+        );
+    }
+
+    const paidBookings = bookings.filter(
+        booking =>
+            booking.paymentStatus === "paid" &&
+            booking.bookingStatus !== "cancelled"
+    );
+
+    const totalEarnings = paidBookings.reduce(
+        (sum, booking) => sum + booking.amount,
+        0
+    );
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    const monthlyEarnings = paidBookings
+        .filter(booking => {
+
+            const date = new Date(booking.createdAt);
+
+            return (
+                date.getMonth() === currentMonth &&
+                date.getFullYear() === currentYear
+            );
+
+        })
+        .reduce((sum, booking) => sum + booking.amount, 0);
+
+    const availableBalance = totalEarnings;
 
     return (
 
@@ -56,16 +101,14 @@ const MentorEarnings = () => {
                             </p>
 
                             <h2 className="mt-3 text-3xl font-bold">
-                                ₹18,450
+                                ₹{totalEarnings}
                             </h2>
 
                         </div>
 
                         <div className="rounded-2xl bg-indigo-50 p-4">
 
-                            <IndianRupee
-                                className="text-indigo-600"
-                            />
+                            <IndianRupee className="text-indigo-600"/>
 
                         </div>
 
@@ -84,16 +127,14 @@ const MentorEarnings = () => {
                             </p>
 
                             <h2 className="mt-3 text-3xl font-bold">
-                                ₹6,850
+                                ₹{monthlyEarnings}
                             </h2>
 
                         </div>
 
                         <div className="rounded-2xl bg-green-50 p-4">
 
-                            <TrendingUp
-                                className="text-green-600"
-                            />
+                            <TrendingUp className="text-green-600"/>
 
                         </div>
 
@@ -112,16 +153,14 @@ const MentorEarnings = () => {
                             </p>
 
                             <h2 className="mt-3 text-3xl font-bold">
-                                ₹2,400
+                                ₹{availableBalance}
                             </h2>
 
                         </div>
 
                         <div className="rounded-2xl bg-yellow-50 p-4">
 
-                            <Wallet
-                                className="text-yellow-600"
-                            />
+                            <Wallet className="text-yellow-600"/>
 
                         </div>
 
@@ -146,15 +185,15 @@ const MentorEarnings = () => {
                             <tr className="border-b border-gray-200">
 
                                 <th className="py-4 text-left">
-                                    Transaction ID
-                                </th>
-
-                                <th className="py-4 text-left">
                                     Student
                                 </th>
 
                                 <th className="py-4 text-left">
                                     Date
+                                </th>
+
+                                <th className="py-4 text-left">
+                                    Payment
                                 </th>
 
                                 <th className="py-4 text-right">
@@ -167,27 +206,29 @@ const MentorEarnings = () => {
 
                         <tbody>
 
-                            {transactions.map((item) => (
+                            {paidBookings.map((booking) => (
 
                                 <tr
-                                    key={item.id}
+                                    key={booking._id}
                                     className="border-b border-gray-100"
                                 >
 
                                     <td className="py-5">
-                                        {item.id}
+                                        {booking.student.fullName}
                                     </td>
 
                                     <td>
-                                        {item.student}
+                                        {new Date(
+                                            booking.createdAt
+                                        ).toLocaleDateString()}
                                     </td>
 
                                     <td>
-                                        {item.date}
+                                        {booking.paymentStatus}
                                     </td>
 
                                     <td className="text-right font-semibold text-green-600">
-                                        + ₹{item.amount}
+                                        + ₹{booking.amount}
                                     </td>
 
                                 </tr>

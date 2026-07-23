@@ -5,43 +5,76 @@ import {
     Star,
 } from "lucide-react";
 
-const stats = [
-    {
-        title: "Today's Sessions",
-        value: "04",
-        icon: CalendarDays,
-    },
-    {
-        title: "Total Students",
-        value: "128",
-        icon: Users,
-    },
-    {
-        title: "Total Earnings",
-        value: "₹18,450",
-        icon: IndianRupee,
-    },
-    {
-        title: "Average Rating",
-        value: "4.9",
-        icon: Star,
-    },
-];
+import { useEffect, useState } from "react";
 
-const sessions = [
-    {
-        student: "Ayush Tiwari",
-        topic: "React Interview Preparation",
-        time: "06:00 PM",
-    },
-    {
-        student: "Rahul Gupta",
-        topic: "Node.js Backend",
-        time: "08:00 PM",
-    },
-];
+import {
+    getMentorBookings,
+    getMentorStats,
+} from "../../services/booking.service";
 
 const Dashboard = () => {
+
+    const [stats, setStats] = useState(null);
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        const fetchDashboard = async () => {
+
+            try {
+
+                const [statsRes, bookingsRes] = await Promise.all([
+                    getMentorStats(),
+                    getMentorBookings(),
+                ]);
+
+                setStats(statsRes.data);
+                setBookings(bookingsRes.data);
+
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+
+        };
+
+        fetchDashboard();
+
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                Loading...
+            </div>
+        );
+    }
+
+    const dashboardCards = [
+        {
+            title: "Today's Sessions",
+            value: stats.todaySessions,
+            icon: CalendarDays,
+        },
+        {
+            title: "Total Students",
+            value: stats.totalStudents,
+            icon: Users,
+        },
+        {
+            title: "Total Earnings",
+            value: `₹${stats.totalEarnings}`,
+            icon: IndianRupee,
+        },
+        {
+            title: "Pending Sessions",
+            value: stats.pendingBookings,
+            icon: Star,
+        },
+    ];
+
     return (
         <section>
 
@@ -59,7 +92,7 @@ const Dashboard = () => {
 
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
-                {stats.map((item) => {
+                {dashboardCards.map((item) => {
 
                     const Icon = item.icon;
 
@@ -108,37 +141,55 @@ const Dashboard = () => {
                 <div className="rounded-3xl border border-gray-200 bg-white p-6 lg:col-span-2">
 
                     <h2 className="text-xl font-semibold">
-                        Today's Sessions
+                        Upcoming Sessions
                     </h2>
 
                     <div className="mt-6 space-y-5">
 
-                        {sessions.map((session) => (
+                        {bookings
+                            .filter(
+                                (booking) =>
+                                    booking.bookingStatus !== "cancelled"
+                            )
+                            .map((booking) => (
 
-                            <div
-                                key={session.student}
-                                className="flex items-center justify-between rounded-2xl border border-gray-100 p-5"
-                            >
+                                <div
+                                    key={booking._id}
+                                    className="flex items-center justify-between rounded-2xl border border-gray-100 p-5"
+                                >
 
-                                <div>
+                                    <div>
 
-                                    <h3 className="font-semibold">
-                                        {session.student}
-                                    </h3>
+                                        <h3 className="font-semibold">
+                                            {booking.student.fullName}
+                                        </h3>
 
-                                    <p className="mt-1 text-gray-500">
-                                        {session.topic}
-                                    </p>
+                                        <p className="mt-1 text-gray-500">
+                                            {new Date(
+                                                booking.sessionDate
+                                            ).toLocaleDateString()}
+                                        </p>
+
+                                    </div>
+
+                                    <span className="rounded-xl bg-indigo-50 px-4 py-2 text-indigo-600">
+                                        {booking.sessionTime}
+                                    </span>
 
                                 </div>
 
-                                <span className="rounded-xl bg-indigo-50 px-4 py-2 text-indigo-600">
-                                    {session.time}
-                                </span>
+                            ))}
 
+                        {bookings.filter(
+                            (booking) =>
+                                booking.bookingStatus !== "cancelled"
+                        ).length === 0 && (
+
+                            <div className="py-10 text-center text-gray-500">
+                                No upcoming sessions.
                             </div>
 
-                        ))}
+                        )}
 
                     </div>
 
@@ -147,15 +198,15 @@ const Dashboard = () => {
                 <div className="rounded-3xl border border-gray-200 bg-white p-6">
 
                     <h2 className="text-xl font-semibold">
-                        Monthly Earnings
+                        Total Earnings
                     </h2>
 
                     <h1 className="mt-8 text-5xl font-bold text-indigo-600">
-                        ₹18,450
+                        ₹{stats.totalEarnings}
                     </h1>
 
                     <p className="mt-4 text-gray-500">
-                        +18% compared to last month.
+                        Earnings from completed paid mentorship sessions.
                     </p>
 
                     <button className="mt-10 w-full rounded-xl bg-indigo-600 py-3 text-white hover:bg-indigo-700">

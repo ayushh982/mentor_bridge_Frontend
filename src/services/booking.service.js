@@ -26,3 +26,13 @@ export const rescheduleBooking = async (
 
     return data;
 };
+
+export const getMentorBookings = async () => {
+    const res = await api.get("/bookings/mentor-bookings");
+    return res.data;
+};
+
+export const getMentorStats = async () => {
+    const res = await api.get("/bookings/mentor-stats");
+    return res.data;
+};

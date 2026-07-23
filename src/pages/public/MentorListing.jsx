@@ -1,29 +1,50 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Star, Briefcase, MapPin } from "lucide-react";
 
-const mentors = [
-    {
-        id: 1,
-        name: "Rahul Sharma",
-        company: "Google",
-        role: "Senior Software Engineer",
-        experience: "5 Years",
-        rating: 4.9,
-        price: 499,
-        skills: ["React", "Node.js", "DSA"],
-    },
-    {
-        id: 2,
-        name: "Priya Singh",
-        company: "Microsoft",
-        role: "SDE II",
-        experience: "4 Years",
-        rating: 4.8,
-        price: 399,
-        skills: ["Java", "Spring Boot", "System Design"],
-    },
-];
+import { getAllMentors } from "../../services/mentor.service";
+
+
 
 const MentorListing = () => {
+
+    const navigate = useNavigate();
+
+    const [mentors, setMentors] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        const fetchMentors = async () => {
+
+            try {
+
+                const res = await getAllMentors();
+
+                setMentors(res.data);
+
+            } catch (err) {
+
+                console.error(err);
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+        fetchMentors();
+
+    }, []);
+    if (loading) {
+    return (
+        <div className="flex h-[60vh] items-center justify-center">
+            <h2 className="text-xl font-semibold">Loading mentors...</h2>
+        </div>
+    );
+}
     return (
 
         <section className="mx-auto max-w-7xl px-6 py-16">
@@ -65,6 +86,8 @@ const MentorListing = () => {
                     <option>Node.js</option>
 
                     <option>Java</option>
+                    <option>C++</option>
+                    <option>MERN Stack</option>
 
                 </select>
 
@@ -80,20 +103,31 @@ const MentorListing = () => {
 
             </div>
 
+            {mentors.length === 0 ? (
+    <div className="rounded-xl border border-dashed p-10 text-center">
+        <h2 className="text-xl font-semibold">
+            No mentors found
+        </h2>
+    </div>
+) : (
+
             <div className="grid gap-8 lg:grid-cols-2">
 
                 {mentors.map((mentor) => (
 
                     <div
-                        key={mentor.id}
+                        key={mentor._id}
                         className="rounded-3xl border border-gray-200 bg-white p-6 transition hover:shadow-lg"
                     >
 
                         <div className="flex gap-5">
 
                             <img
-                                src={`https://i.pravatar.cc/400?img=${mentor.id + 5}`}
-                                alt={mentor.name}
+                                src={
+    mentor.user.avatar ||
+    "https://i.pravatar.cc/150?img=5"
+}
+                                alt={mentor.user?.fullName}
                                 className="h-24 w-24 rounded-full"
                             />
 
@@ -102,17 +136,17 @@ const MentorListing = () => {
                                 <div className="flex items-center justify-between">
 
                                     <h2 className="text-2xl font-semibold">
-                                        {mentor.name}
+                                        {mentor.user?.fullName}
                                     </h2>
 
                                     <span className="rounded-xl bg-indigo-50 px-3 py-2 text-indigo-600">
-                                        ₹{mentor.price}
+                                        ₹{mentor.pricing}
                                     </span>
 
                                 </div>
 
                                 <p className="mt-2 text-gray-500">
-                                    {mentor.role}
+                                    {mentor.designation}
                                 </p>
 
                                 <div className="mt-4 flex flex-wrap gap-5 text-sm text-gray-500">
@@ -129,7 +163,7 @@ const MentorListing = () => {
 
                                         <MapPin size={16} />
 
-                                        {mentor.experience}
+                                        {mentor.experience} Years
 
                                     </span>
 
@@ -140,7 +174,7 @@ const MentorListing = () => {
                                             className="fill-yellow-400 text-yellow-400"
                                         />
 
-                                        {mentor.rating}
+                                        {mentor.averageRating ?? "New"}
 
                                     </span>
 
@@ -148,7 +182,7 @@ const MentorListing = () => {
 
                                 <div className="mt-5 flex flex-wrap gap-2">
 
-                                    {mentor.skills.map((skill) => (
+                                    {mentor.skills?.map((skill) => (
 
                                         <span
                                             key={skill}
@@ -161,11 +195,12 @@ const MentorListing = () => {
 
                                 </div>
 
-                                <button className="mt-6 rounded-xl bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700">
-
-                                    View Profile
-
-                                </button>
+                                <button
+    onClick={() => navigate(`/mentors/${mentor._id}`)}
+    className="mt-6 rounded-xl bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700"
+>
+    View Profile
+</button>
 
                             </div>
 
@@ -176,6 +211,7 @@ const MentorListing = () => {
                 ))}
 
             </div>
+            )}
 
         </section>
 

@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
     CalendarDays,
     MessageCircle,
@@ -5,52 +8,92 @@ import {
     Star,
 } from "lucide-react";
 
-const stats = [
-    {
-        title: "Upcoming Sessions",
-        value: "03",
-        icon: CalendarDays,
-    },
-    {
-        title: "My Mentors",
-        value: "08",
-        icon: Users,
-    },
-    {
-        title: "Messages",
-        value: "21",
-        icon: MessageCircle,
-    },
-    {
-        title: "Average Rating",
-        value: "4.9",
-        icon: Star,
-    },
-];
+import { useAuth } from "../../context/AuthContext";
+import { getStudentDashboardData } from "../../services/dashboard.service";
 
-const sessions = [
-    {
-        mentor: "Rahul Sharma",
-        company: "Google",
-        date: "12 July",
-        time: "6:00 PM",
-    },
-    {
-        mentor: "Priya Singh",
-        company: "Microsoft",
-        date: "15 July",
-        time: "7:30 PM",
-    },
-];
 
 const Dashboard = () => {
+
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const [bookings, setBookings] = useState([]);
+    const [mentors, setMentors] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        const fetchDashboard = async () => {
+
+            try {
+
+                const res = await getStudentDashboardData();
+
+                setBookings(res.bookings);
+                setMentors(res.mentors);
+
+            } catch (err) {
+
+                console.error(err);
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+        fetchDashboard();
+
+    }, []);
+
+    const upcomingBookings = useMemo(() => {
+
+    return bookings.filter(
+        (booking) =>
+            booking.bookingStatus === "pending" ||
+            booking.bookingStatus === "confirmed"
+    );
+
+}, [bookings]);
+
+const stats = [
+
+    {
+        title: "Upcoming Sessions",
+        value: upcomingBookings.length,
+        icon: CalendarDays,
+    },
+
+    {
+        title: "My Mentors",
+        value: mentors.length,
+        icon: Users,
+    },
+
+    {
+        title: "Messages",
+        value: "--",
+        icon: MessageCircle,
+    },
+
+    {
+        title: "Average Rating",
+        value: "--",
+        icon: Star,
+    },
+
+];
+
+const recommendedMentor = mentors[0] || null;
     return (
         <section>
 
             <div className="mb-10">
 
                 <h1 className="text-3xl font-bold text-gray-900">
-                    Welcome Back 👋
+                    Welcome Back, {user?.fullName} 👋
                 </h1>
 
                 <p className="mt-2 text-gray-500">
@@ -115,42 +158,52 @@ const Dashboard = () => {
 
                     <div className="mt-6 space-y-5">
 
-                        {sessions.map((session) => (
+    {upcomingBookings.length > 0 ? (
 
-                            <div
-                                key={session.mentor}
-                                className="flex items-center justify-between rounded-2xl border border-gray-100 p-5"
-                            >
+        upcomingBookings.map((session) => (
 
-                                <div>
+            <div
+                key={session._id}
+                className="flex items-center justify-between rounded-2xl border border-gray-100 p-5"
+            >
 
-                                    <h3 className="font-semibold">
-                                        {session.mentor}
-                                    </h3>
+                <div>
 
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        {session.company}
-                                    </p>
+                    <h3 className="font-semibold">
+                        {session.mentor?.user?.fullName}
+                    </h3>
 
-                                </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                        {session.mentor?.company}
+                    </p>
 
-                                <div className="text-right">
+                </div>
 
-                                    <p className="font-medium">
-                                        {session.date}
-                                    </p>
+                <div className="text-right">
 
-                                    <p className="text-sm text-gray-500">
-                                        {session.time}
-                                    </p>
+                    <p className="font-medium">
+                        {new Date(session.sessionDate).toLocaleDateString()}
+                    </p>
 
-                                </div>
+                    <p className="text-sm text-gray-500">
+                        {session.sessionTime}
+                    </p>
 
-                            </div>
+                </div>
 
-                        ))}
+            </div>
 
-                    </div>
+        ))
+
+    ) : (
+
+        <p className="text-center text-gray-500">
+            No upcoming sessions.
+        </p>
+
+    )}
+
+</div>
 
                 </div>
 
@@ -161,22 +214,31 @@ const Dashboard = () => {
                     </h2>
 
                     <img
-                        src="https://i.pravatar.cc/150?img=5"
+                        src={
+                            recommendedMentor?.user?.avatar ||
+                             "https://i.pravatar.cc/150?img=5"
+                            }
                         alt="mentor"
                         className="mx-auto mt-8 h-24 w-24 rounded-full"
                     />
 
                     <h3 className="mt-5 text-center text-xl font-semibold">
-                        Rahul Sharma
+                        {recommendedMentor?.user?.fullName}
                     </h3>
 
                     <p className="mt-2 text-center text-gray-500">
-                        Senior Software Engineer
+                        {recommendedMentor?.designation}
                     </p>
 
-                    <button className="mt-8 w-full rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700">
-                        View Profile
-                    </button>
+                    <button
+    onClick={() =>
+        recommendedMentor &&
+        navigate(`/mentors/${recommendedMentor._id}`)
+    }
+    className="mt-8 w-full rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700"
+>
+    View Profile
+</button>
 
                 </div>
 

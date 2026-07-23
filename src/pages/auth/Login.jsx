@@ -27,7 +27,7 @@ const Login = () => {
 
         const res = await loginUser(formData);
 
-        console.log("LOGIN RESPONSE:", res);
+        console.log("LOGIN RESPONSE:Logged-In successful,frontend/src/pages/auth/login.jsx me check");
 
         // Save logged-in user in AuthContext
         setUser(res.data.user);

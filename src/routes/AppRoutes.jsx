@@ -72,7 +72,7 @@ const AppRoutes = () => {
         />
 
         <Route
-            path="/student/book-session"
+            path="/student/book-session/:mentorId"
             element={<BookSession />}
         />
 

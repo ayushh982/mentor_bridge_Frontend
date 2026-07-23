@@ -1,3 +1,10 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { getMentorById } from "../../services/mentor.service";
+import { bookSession } from "../../services/booking.service";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 import { CalendarDays, Clock, IndianRupee } from "lucide-react";
 
 const slots = [
@@ -9,7 +16,87 @@ const slots = [
 ];
 
 const BookSession = () => {
+    
+        const { mentorId } = useParams();
+        const navigate = useNavigate();
+
+const [mentor, setMentor] = useState(null);
+const [loading, setLoading] = useState(true);
+const [selectedDate, setSelectedDate] = useState("");
+const [selectedSlot, setSelectedSlot] = useState("");
+const [bookingLoading, setBookingLoading] = useState(false);
+
+useEffect(() => {
+    const fetchMentor = async () => {
+        try {
+            const res = await getMentorById(mentorId);
+
+            console.log("Mentor API Response:", res);
+
+            // If your backend returns { success, data }
+            setMentor(res.data);
+
+            // If console shows mentor object directly,
+            // replace the above line with:
+            // setMentor(res);
+
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchMentor();
+}, [mentorId]);
+if (loading) {
     return (
+        <div className="p-10 text-center text-lg">
+            Loading mentor...
+        </div>
+    );
+}
+
+const handleBooking = async () => {
+
+    if (!selectedDate || !selectedSlot) {
+        toast.error("Please select date and time");
+        return;
+    }
+
+    try {
+
+        setBookingLoading(true);
+
+        await bookSession({
+            mentorId: mentor._id,
+            sessionDate: selectedDate,
+            sessionTime: selectedSlot,
+            sessionDuration: mentor.sessionDuration,
+        });
+
+        toast.success("Session booked successfully");
+
+        navigate("/student/my-bookings");
+
+    } catch (error) {
+
+        console.error(error);
+
+        toast.error(
+            error.response?.data?.message ||
+            "Booking failed"
+        );
+
+    } finally {
+
+        setBookingLoading(false);
+
+    }
+
+};
+    return (
+        
         <section>
 
             <div className="mb-8">
@@ -37,7 +124,7 @@ const BookSession = () => {
                         <div className="mt-6 flex items-center gap-5">
 
                             <img
-                                src="https://i.pravatar.cc/120?img=12"
+                                src={mentor?.user?.avatar||"https://i.pravatar.cc/120?img=12" }
                                 alt="mentor"
                                 className="h-20 w-20 rounded-full"
                             />
@@ -45,11 +132,11 @@ const BookSession = () => {
                             <div>
 
                                 <h3 className="text-xl font-semibold">
-                                    Rahul Sharma
+                                    {mentor?.user?.fullName}
                                 </h3>
 
                                 <p className="text-gray-500">
-                                    Senior Software Engineer • Google
+                                    {mentor?.designation} • {mentor?.company}
                                 </p>
 
                             </div>
@@ -64,10 +151,13 @@ const BookSession = () => {
                             Select Date
                         </h2>
 
-                        <input
-                            type="date"
-                            className="mt-5 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none"
-                        />
+                       <input
+    type="date"
+    min={new Date().toISOString().split("T")[0]}
+    value={selectedDate}
+    onChange={(e) => setSelectedDate(e.target.value)}
+    className="mt-5 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none"
+/>
 
                     </div>
 
@@ -82,11 +172,16 @@ const BookSession = () => {
                             {slots.map((slot) => (
 
                                 <button
-                                    key={slot}
-                                    className="rounded-xl border border-gray-200 px-5 py-3 transition hover:border-indigo-600 hover:text-indigo-600"
-                                >
-                                    {slot}
-                                </button>
+    key={slot}
+    onClick={() => setSelectedSlot(slot)}
+    className={`rounded-xl border px-5 py-3 transition ${
+        selectedSlot === slot
+            ? "border-indigo-600 bg-indigo-600 text-white"
+            : "border-gray-200 hover:border-indigo-600 hover:text-indigo-600"
+    }`}
+>
+    {slot}
+</button>
 
                             ))}
 
@@ -113,7 +208,7 @@ const BookSession = () => {
                                 </span>
 
                                 <span>
-                                    30 Minutes
+                                    {mentor?.sessionDuration} Minutes
                                 </span>
 
                             </div>
@@ -125,7 +220,7 @@ const BookSession = () => {
                                 </span>
 
                                 <span>
-                                    --
+                                    {selectedDate || "--"}
                                 </span>
 
                             </div>
@@ -137,7 +232,7 @@ const BookSession = () => {
                                 </span>
 
                                 <span>
-                                    --
+                                   {selectedSlot || "--"}
                                 </span>
 
                             </div>
@@ -152,7 +247,16 @@ const BookSession = () => {
 
                                     <IndianRupee size={18} />
 
-                                    499
+                                    {mentor?.isFreeMentorship ? (
+    <span className="text-green-600 font-semibold">
+        Free
+    </span>
+) : (
+    <span className="flex items-center">
+        <IndianRupee size={18} />
+        {mentor?.pricing}
+    </span>
+)}
 
                                 </span>
 
@@ -160,11 +264,13 @@ const BookSession = () => {
 
                         </div>
 
-                        <button className="mt-8 w-full rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700">
-
-                            Continue to Payment
-
-                        </button>
+                        <button
+    onClick={handleBooking}
+    disabled={bookingLoading}
+    className="mt-8 w-full rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+>
+    {bookingLoading ? "Booking..." : "Continue to Payment"}
+</button>
 
                     </div>
 

@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     Star,
     Briefcase,
@@ -6,8 +8,66 @@ import {
     IndianRupee,
 } from "lucide-react";
 
+import { getMentorById } from "../../services/mentor.service";
+
 const MentorDetails = () => {
+
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [mentor, setMentor] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+    const fetchMentor = async () => {
+
+        try {
+
+            const res = await getMentorById(id);
+
+            console.log("Mentor Details Response:", res);
+
+            setMentor(res.data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+    fetchMentor();
+
+}, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex h-[60vh] items-center justify-center">
+                <h2 className="text-xl font-semibold">
+                    Loading Mentor...
+                </h2>
+            </div>
+        );
+    }
+
+    if (!mentor) {
+        return (
+            <div className="flex h-[60vh] items-center justify-center">
+                <h2 className="text-xl font-semibold">
+                    Mentor not found
+                </h2>
+            </div>
+        );
+    }
+
     return (
+
         <section className="mx-auto max-w-7xl px-6 py-16">
 
             <div className="grid gap-10 lg:grid-cols-3">
@@ -15,34 +75,45 @@ const MentorDetails = () => {
                 <div className="rounded-3xl border border-gray-200 bg-white p-8">
 
                     <img
-                        src="https://i.pravatar.cc/400?img=68"
-                        alt=""
+                        src={
+                            mentor.user?.avatar ||
+                            "https://i.pravatar.cc/200?img=68"
+                        }
+                        alt={mentor.user?.fullName}
                         className="mx-auto h-40 w-40 rounded-full"
                     />
 
                     <h1 className="mt-6 text-center text-3xl font-bold">
-                        Rahul Sharma
+                        {mentor.user?.fullName}
                     </h1>
 
                     <p className="mt-2 text-center text-gray-500">
-                        Senior Software Engineer
+                        {mentor.designation}
                     </p>
 
                     <div className="mt-6 flex justify-center gap-6">
 
                         <span className="flex items-center gap-2">
-                            <Star size={18} className="fill-yellow-400 text-yellow-400" />
-                            4.9
+                            <Star
+                                size={18}
+                                className="fill-yellow-400 text-yellow-400"
+                            />
+                            {mentor.averageRating ?? "New"}
                         </span>
 
                         <span className="flex items-center gap-2">
                             <Briefcase size={18} />
-                            Google
+                            {mentor.company}
                         </span>
 
                     </div>
 
-                    <button className="mt-8 w-full rounded-xl bg-indigo-600 py-3 text-white">
+                    <button
+                        onClick={() =>
+                            navigate(`/student/book-session/${mentor._id}`)
+                        }
+                        className="mt-8 w-full rounded-xl bg-indigo-600 py-3 text-white hover:bg-indigo-700"
+                    >
                         Book Session
                     </button>
 
@@ -57,10 +128,7 @@ const MentorDetails = () => {
                         </h2>
 
                         <p className="mt-5 leading-8 text-gray-600">
-
-                            Helping students crack product-based companies,
-                            DSA, React and Backend interviews.
-
+                            {mentor.bio}
                         </p>
 
                     </div>
@@ -73,13 +141,7 @@ const MentorDetails = () => {
 
                         <div className="mt-6 flex flex-wrap gap-3">
 
-                            {[
-                                "React",
-                                "Node.js",
-                                "MongoDB",
-                                "System Design",
-                                "DSA",
-                            ].map((skill) => (
+                            {mentor.skills?.map((skill) => (
 
                                 <span
                                     key={skill}
@@ -112,7 +174,9 @@ const MentorDetails = () => {
                                         Duration
                                     </p>
 
-                                    <p>30 Minutes</p>
+                                    <p>
+                                        {mentor.sessionDuration} Minutes
+                                    </p>
 
                                 </div>
 
@@ -128,7 +192,9 @@ const MentorDetails = () => {
                                         Availability
                                     </p>
 
-                                    <p>Weekends</p>
+                                    <p>
+                                        {mentor.availability?.length || 0} Slots
+                                    </p>
 
                                 </div>
 
@@ -144,7 +210,9 @@ const MentorDetails = () => {
                                         Price
                                     </p>
 
-                                    <p>₹499</p>
+                                    <p>
+                                        ₹{mentor.pricing}
+                                    </p>
 
                                 </div>
 

@@ -1,16 +1,22 @@
+
 import api from "./api";
 
 export const createReview = async (reviewData) => {
-    const { data } = await api.post("/reviews", reviewData);
-    return data;
+    const res = await api.post("/reviews", reviewData);
+    return res.data;
 };
 
 export const getMentorReviews = async (mentorId) => {
-    const { data } = await api.get(`/reviews/${mentorId}`);
-    return data;
+    const res = await api.get(`/reviews/${mentorId}`);
+    return res.data;
+};
+
+export const getMyReviews = async () => {
+    const res = await api.get("/reviews/my-reviews");
+    return res.data;
 };
 
 export const deleteReview = async (reviewId) => {
-    const { data } = await api.delete(`/reviews/${reviewId}`);
-    return data;
+    const res = await api.delete(`/reviews/${reviewId}`);
+    return res.data;
 };
